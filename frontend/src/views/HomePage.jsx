@@ -7,10 +7,12 @@ import { BASE_URL } from "../axios/axiosMain";
 
 const HomePage = () => {
   const [tabledata, setTableData] = useState(null);
+  const [newAdded, setNewlyAdded] = useState(false);
+  const [searchVal, setSearchVal] = useState("");
   const navigate = useNavigate();
-  const fetchData = async () => {
+  const fetchData = async (val) => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/api/v1/reviews/list`);
+      const { data } = await axios.get(`${BASE_URL}/api/v1/reviews/list?search=${val}`);
       setTableData(
         data?.data?.map((item, index) => ({
           no: index + 1,
@@ -25,8 +27,8 @@ const HomePage = () => {
     }
   };
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(searchVal);
+  }, [searchVal]);
   useEffect(() => {
     if (!tabledata) return;
     Socket.on("reviews", (data) => {
@@ -36,13 +38,19 @@ const HomePage = () => {
           title: review.title,
           content: review.content,
           date: review.updatedAt?.slice(0, 10),
-          id: review._id
+          id: review._id,
+          event: "create"
         };
         if (tabledata.some((item) => item.id === review._id)) {
           return;
         }
+
         const newTableData = [newData, ...tabledata];
         setTableData(newTableData);
+        setNewlyAdded(review._id);
+        setTimeout(() => {
+          setNewlyAdded(false);
+        }, 6000);
       }
       if (data.eventType === "edit") {
         const { review } = data;
@@ -51,9 +59,14 @@ const HomePage = () => {
           title: review.title,
           content: review.content,
           date: review.updatedAt?.slice(0, 10),
-          id: review._id
+          id: review._id,
+          event: "edit"
         };
         setTableData([newData, ...currList]);
+        setNewlyAdded(review._id);
+        setTimeout(() => {
+          setNewlyAdded(false);
+        }, 6000);
       }
       if (data.eventType === "delete") {
         const { review } = data;
@@ -80,6 +93,7 @@ const HomePage = () => {
     <div>
       <h2>Reviews</h2>
       <div className="create-button-container">
+        <input name="search" className="search-input" placeholder="Search here" value={searchVal} onChange={(e) => setSearchVal(e.target.value)} />
         <button onClick={handleNew} className="new-button">
           Create New Review
         </button>
@@ -97,7 +111,12 @@ const HomePage = () => {
         </thead>
         <tbody>
           {tabledata?.map((item, index) => (
-            <tr key={item.id}>
+            <tr
+              key={item.id}
+              style={{
+                background: item.event === "create" && newAdded === item.id ? "#aee1ae" : item.event === "edit" && newAdded === item.id ? "lightblue" : ""
+              }}
+            >
               <td>{index + 1}</td>
               <td>{item.title}</td>
               <td>{item.content}</td>

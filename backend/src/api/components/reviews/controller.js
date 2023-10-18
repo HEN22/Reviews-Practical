@@ -40,7 +40,8 @@ export const createReview = async (req, res) => {
  */
 export const listReviews = async (req, res) => {
   try {
-    const reviews = await fetchReviewsFromDb();
+    const { search, sortOrder } = req.query;
+    const reviews = await fetchReviewsFromDb(null, { search, sortOrder });
     if (reviews?.error) return handleError({ res, err: reviews.error });
     return handleResponse({
       res,

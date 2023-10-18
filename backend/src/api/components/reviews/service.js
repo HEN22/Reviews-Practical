@@ -13,11 +13,25 @@ export const addReviewToDb = async (data) => {
   }
 };
 
-export const fetchReviewsFromDb = async (id) => {
+export const fetchReviewsFromDb = async (id, filter) => {
   try {
     let review = null;
     if (id) review = await Reviews.findOne({ _id: new ObjectId(id) });
-    else review = await Reviews.find({}).sort({ updatedAt: -1 });
+    else {
+      let sort = -1;
+      if (filter?.sortOrder) sort = sort;
+      review = await Reviews.find({}).sort({ updatedAt: sort });
+
+      if (filter?.search) {
+        review = review
+          .map((item) => {
+            let search = new RegExp(`${filter.search}`, 'i');
+            if (item?.title.match(search)) return item;
+            if (item?.content.match(search)) return item;
+          })
+          .filter((item) => item);
+      }
+    }
     return review;
   } catch (err) {
     console.error(err.message);
