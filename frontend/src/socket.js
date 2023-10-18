@@ -1,14 +1,6 @@
 import { io } from "socket.io-client";
 
-export const Socket = io(
-  "https://6556-49-36-68-43.ngrok-free.app?path=review",
-  {
-    // extraHeaders: {
-    //   "Access-Control-Allow-Origin": "*",
-    // },
-    // transports: ["polling"],
-  }
-);
+export const Socket = io("http://localhost:3000?path=review");
 Socket.on("connect", (socket) => {
   console.log("connected socket connection status::", socket);
 });
