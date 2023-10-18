@@ -71,7 +71,11 @@ const HomePage = () => {
       if (data.eventType === "delete") {
         const { review } = data;
         const newTableData = tabledata.filter((item) => item.id !== review._id);
-        setTableData(newTableData);
+        setNewlyAdded(review._id);
+        setTimeout(() => {
+          setNewlyAdded(false);
+          setTableData(newTableData);
+        }, 3000);
       }
     });
   }, [tabledata]);
@@ -114,7 +118,8 @@ const HomePage = () => {
             <tr
               key={item.id}
               style={{
-                background: item.event === "create" && newAdded === item.id ? "#aee1ae" : item.event === "edit" && newAdded === item.id ? "lightblue" : ""
+                background:
+                  item.event === "create" && newAdded === item.id ? "#aee1ae" : item.event === "edit" && newAdded === item.id ? "lightblue" : newAdded === item.id ? "salmon" : ""
               }}
             >
               <td>{index + 1}</td>
